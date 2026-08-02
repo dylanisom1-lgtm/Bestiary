@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Kaarthōtian Bestiary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --abyss:#ffffff;
+    --abyss-2:#f6f2e9;
+    --panel:#f6f2e9;
+    --panel-2:#f0ebde;
+    --vellum:#211e18;
+    --vellum-dim:#5f5849;
+    --vellum-faint:#938b78;
+    --copper:#c47a42;
+    --copper-deep:#9a5a2e;
+    --verdigris:#3d7d6a;
+    --gold:#a9791f;
+    --ichor:#a8402f;
+    --rule:#e3ddce;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(120% 90% at 50% -12%, #ffffff 0%, #ffffff 60%, #faf8f2 100%);
+    color:var(--vellum);
+    font-family:"EB Garamond",Georgia,serif;
+    font-size:17px;
+    line-height:1.62;
+    letter-spacing:.1px;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{background:var(--copper);color:#ffffff}
+
+  a{color:var(--verdigris)}
+
+  /* ---------- masthead ---------- */
+  header.masthead{
+    text-align:center;
+    padding:42px 24px 26px;
+    border-bottom:1px solid var(--rule);
+    position:relative;
+  }
+  .masthead .kicker{
+    font-family:"Cinzel",serif;
+    font-size:.72rem;
+    letter-spacing:.42em;
+    text-transform:uppercase;
+    color:var(--copper);
+    margin:0 0 14px;
+    padding-left:.42em;
+  }
+  .masthead h1{
+    font-family:"Cinzel",serif;
+    font-weight:600;
+    font-size:clamp(1.7rem,5vw,3rem);
+    letter-spacing:.08em;
+    margin:0;
+    color:var(--vellum);
+    text-shadow:none;
+  }
+  .masthead .sub{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    font-size:1.12rem;
+    color:var(--vellum-dim);
+    margin:10px 0 0;
+  }
+  .divider-mark{
+    color:var(--gold);
+    font-size:1.1rem;
+    letter-spacing:.4em;
+    margin-top:16px;
+    opacity:.8;
+  }
+
+  /* ---------- layout ---------- */
+  .book{
+    display:grid;
+    grid-template-columns:236px minmax(0,1fr);
+    max-width:1120px;
+    margin:0 auto;
+    gap:0;
+    transition:grid-template-columns .38s cubic-bezier(.4,0,.2,1);
+  }
+  .book.collapsed{grid-template-columns:46px minmax(0,1fr)}
+
+  /* ---------- index spine ---------- */
+  nav.spine{
+    border-right:1px solid var(--rule);
+    padding:34px 0 60px;
+    position:relative;
+    overflow:hidden;
+  }
+  .book.collapsed nav.spine{padding:0}
+  .spine-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px 0 26px;
+    margin:0 0 18px;
+  }
+  .spine h2{
+    font-family:"Cinzel",serif;
+    font-weight:500;
+    font-size:.66rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--vellum-faint);
+    margin:0;
+    padding:0;
+  }
+  .spine-toggle{
+    flex:none;
+    background:none;
+    border:1px solid var(--rule);
+    border-radius:2px;
+    color:var(--vellum-faint);
+    width:24px;height:24px;
+    line-height:1;
+    font-family:"Cinzel",serif;
+    font-size:.9rem;
+    cursor:pointer;
+    transition:color .18s,border-color .18s;
+  }
+  .spine-toggle:hover{color:var(--copper);border-color:var(--copper)}
+  .spine-toggle:focus-visible{outline:2px solid var(--verdigris);outline-offset:2px}
+  .book.collapsed .spine-body{display:none}
+  /* collapsed rail */
+  .rail{
+    display:none;
+    width:100%;height:100%;min-height:220px;
+    background:none;border:none;cursor:pointer;
+    flex-direction:column;align-items:center;gap:16px;
+    padding:34px 0;
+    color:var(--vellum-faint);
+    transition:color .2s,background .2s;
+  }
+  .rail:hover{color:var(--copper);background:#0000000a}
+  .rail:focus-visible{outline:2px solid var(--verdigris);outline-offset:-3px}
+  .book.collapsed .rail{display:flex}
+  .rail-txt{
+    writing-mode:vertical-rl;
+    text-orientation:mixed;
+    font-family:"Cinzel",serif;
+    font-size:.66rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+  }
+  .rail-chev{font-family:"Cinzel",serif;font-size:1rem;line-height:1}
+  .spine ul{list-style:none;margin:0;padding:0}
+  .spine li{margin:0}
+  .spine .entry{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    border-left:2px solid transparent;
+    color:var(--vellum-dim);
+    font-family:"Cormorant Garamond",serif;
+    font-size:1.28rem;
+    padding:8px 24px 8px 24px;
+    cursor:pointer;
+    transition:color .2s,border-color .2s,background .2s;
+  }
+  .spine .entry:hover{color:var(--vellum);background:#0000000a}
+  .spine .entry.active{
+    color:var(--copper);
+    border-left-color:var(--copper);
+    background:linear-gradient(90deg,#c47a4218,transparent);
+  }
+  .spine .entry .by{
+    display:block;
+    font-family:"EB Garamond",serif;
+    font-style:italic;
+    font-size:.8rem;
+    color:var(--vellum-faint);
+    letter-spacing:.02em;
+  }
+  .spine .sealed{
+    color:var(--vellum-faint);
+    font-style:italic;
+    cursor:not-allowed;
+    opacity:.62;
+  }
+  .spine .sealed:hover{background:none;color:var(--vellum-faint)}
+  .spine .seal-note{
+    font-family:"EB Garamond",serif;
+    font-size:.66rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--copper-deep);
+    display:block;
+    margin-top:1px;
+  }
+  .spine .entry.soon .nm{color:var(--vellum-dim)}
+  .spine .entry.soon:hover .nm{color:var(--vellum)}
+  .spine .entry.soon.active .nm{color:var(--copper)}
+
+  /* routable folio views */
+  .folio-view[hidden]{display:none}
+  .soon-view{min-height:46vh}
+  .soon-title{color:var(--vellum);margin-bottom:0}
+  .soon-block{
+    border-top:1px solid var(--rule);
+    margin-top:30px;
+    padding:56px 20px 40px;
+    text-align:center;
+  }
+  .soon-tag{
+    font-family:"Cinzel",serif;
+    font-size:.7rem;
+    letter-spacing:.36em;
+    text-transform:uppercase;
+    color:var(--copper);
+    margin:0 0 16px;
+    padding-left:.36em;
+  }
+  .soon-msg{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    font-size:1.24rem;
+    color:var(--vellum-dim);
+    max-width:46ch;
+    margin:0 auto;
+  }
+
+  /* pseudo god: encounter tenets + form variants */
+  .tenets{margin:12px 0 4px}
+  .tenet{
+    border-left:2px solid var(--copper-deep);
+    padding:2px 0 2px 16px;
+    margin:14px 0;
+    color:#3a352a;
+    line-height:1.55;
+  }
+  .tenet-h{color:var(--copper);font-variant:small-caps;letter-spacing:.03em;font-weight:500}
+  .variant{padding:1px 0}
+  .variant + .variant{margin-top:9px;padding-top:9px;border-top:1px solid #eae4d6}
+  .vtag{
+    font-family:"Cinzel",serif;font-size:.55rem;letter-spacing:.14em;
+    color:var(--copper);border:1px solid var(--rule);border-radius:2px;
+    padding:1px 6px;margin-right:9px;white-space:nowrap;
+  }
+
+  /* ---------- folio ---------- */
+  main.folio{
+    padding:38px clamp(22px,4vw,54px) 90px;
+    min-width:0;
+  }
+  .folio .names{
+    font-family:"Cinzel",serif;
+    font-size:.68rem;
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    color:var(--copper);
+    margin:0 0 6px;
+  }
+  .folio h2.title{
+    font-family:"Cinzel",serif;
+    font-weight:600;
+    font-size:clamp(2.1rem,6vw,3.4rem);
+    letter-spacing:.06em;
+    margin:0 0 4px;
+    line-height:1.02;
+  }
+  .folio .aka{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    font-size:1.14rem;
+    color:var(--vellum-dim);
+    margin:0 0 22px;
+  }
+
+  .epigraph{
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    padding:22px 4px 22px 0;
+    margin:0 0 30px;
+    font-family:"Cormorant Garamond",serif;
+    font-size:1.34rem;
+    font-style:italic;
+    line-height:1.5;
+    color:#3a352a;
+  }
+  .epigraph .dropcap{
+    float:left;
+    font-family:"Cinzel",serif;
+    font-style:normal;
+    font-size:3.4rem;
+    line-height:.78;
+    color:var(--gold);
+    padding:6px 12px 0 0;
+    text-shadow:none;
+  }
+
+  .section-label{
+    font-family:"Cinzel",serif;
+    font-size:.72rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--verdigris);
+    margin:38px 0 4px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .section-label::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg,var(--rule),transparent);
+  }
+
+  .prose p{margin:12px 0}
+  .prose .lede{color:#33302a}
+  .term{color:var(--copper);font-variant:small-caps;letter-spacing:.04em}
+
+  /* ---------- tables ---------- */
+  .codex-table{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0 6px;
+    font-size:.96rem;
+  }
+  .codex-table caption{
+    text-align:left;
+    font-family:"EB Garamond",serif;
+    font-style:italic;
+    color:var(--vellum-faint);
+    font-size:.9rem;
+    padding-bottom:8px;
+  }
+  .codex-table th{
+    font-family:"Cinzel",serif;
+    font-weight:500;
+    font-size:.6rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--vellum-faint);
+    text-align:left;
+    padding:6px 12px 8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .codex-table td{
+    padding:9px 12px;
+    vertical-align:top;
+    border-bottom:1px solid #eae4d6;
+  }
+  .codex-table tr:last-child td{border-bottom:none}
+  .codex-table .roll{
+    font-family:"Cinzel",serif;
+    color:var(--copper);
+    white-space:nowrap;
+    font-size:.86rem;
+    width:1%;
+  }
+  .codex-table .nm{color:var(--vellum);font-variant:small-caps;letter-spacing:.03em}
+  .codex-table .hp{color:var(--ichor);font-family:"Cinzel",serif;font-size:.82rem;white-space:nowrap}
+  .codex-table td small{color:var(--vellum-dim);display:block;font-size:.86rem;line-height:1.45;margin-top:2px}
+
+  /* ---------- divination / autoroller ---------- */
+  .divination{
+    margin:46px 0 0;
+    border:1px solid var(--copper-deep);
+    border-radius:2px;
+    background:
+      linear-gradient(180deg,#fbf7ef,#f4efe3),
+      var(--abyss-2);
+    position:relative;
+    box-shadow:0 0 0 1px #00000010 inset, 0 24px 60px -46px #0000002e;
+  }
+  .divination::before{
+    content:"";
+    position:absolute;inset:5px;
+    border:1px solid #0000000d;
+    border-radius:1px;
+    pointer-events:none;
+  }
+  .div-head{
+    text-align:center;
+    padding:26px 20px 4px;
+  }
+  .div-head .eyebrow{
+    font-family:"Cinzel",serif;
+    font-size:.64rem;
+    letter-spacing:.36em;
+    text-transform:uppercase;
+    color:var(--copper);
+    margin:0 0 8px;
+    padding-left:.36em;
+  }
+  .div-head h3{
+    font-family:"Cinzel",serif;
+    font-weight:600;
+    font-size:clamp(1.4rem,3.6vw,1.9rem);
+    letter-spacing:.05em;
+    margin:0;
+  }
+  .div-head p{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    color:var(--vellum-dim);
+    margin:6px auto 0;
+    max-width:44ch;
+    font-size:1.06rem;
+  }
+  .conjure-wrap{text-align:center;padding:20px 20px 30px}
+  button.conjure{
+    font-family:"Cinzel",serif;
+    font-weight:500;
+    font-size:.82rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:#2a2113;
+    background:linear-gradient(180deg,#cba43f,#ad7f2b);
+    border:none;
+    border-radius:2px;
+    padding:15px 34px;
+    cursor:pointer;
+    box-shadow:0 2px 0 #7d5e22, 0 12px 30px -16px #b98f3a;
+    transition:transform .12s,box-shadow .12s,filter .12s;
+  }
+  button.conjure:hover{filter:brightness(1.06);transform:translateY(-1px)}
+  button.conjure:active{transform:translateY(1px);box-shadow:0 1px 0 #6d5320}
+  button.conjure:focus-visible{outline:2px solid var(--verdigris);outline-offset:3px}
+  .conjure-sub{
+    display:block;
+    font-family:"EB Garamond",serif;
+    font-style:italic;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--vellum-faint);
+    font-size:.82rem;
+    margin-top:12px;
+  }
+
+  /* result specimen */
+  .specimen{
+    border-top:1px solid var(--copper-deep);
+    padding:30px clamp(20px,3.5vw,40px) 36px;
+    animation:rise .5s ease both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .specimen .spec-names{
+    font-family:"Cinzel",serif;
+    font-size:.62rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--copper);
+    text-align:center;
+    margin:0 0 6px;
+  }
+  .specimen .epithet{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    font-size:clamp(1.5rem,4vw,2.1rem);
+    text-align:center;
+    color:var(--vellum);
+    margin:0 0 4px;
+  }
+  .specimen .epithet .the{color:var(--vellum-faint);font-size:.7em}
+  .rollstamp{
+    text-align:center;
+    font-family:"Cinzel",serif;
+    font-size:.6rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--vellum-faint);
+    margin:0 0 24px;
+  }
+  .rollstamp b{color:var(--verdigris);font-weight:500}
+
+  .statline{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px 14px;
+    margin:0 0 26px;
+  }
+  .stat{
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:10px 18px;
+    text-align:center;
+    background:#f7f3ea;
+    min-width:96px;
+  }
+  .stat .k{
+    display:block;
+    font-family:"Cinzel",serif;
+    font-size:.56rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--vellum-faint);
+    margin-bottom:4px;
+  }
+  .stat .v{
+    font-family:"Cinzel",serif;
+    font-size:1.16rem;
+    color:var(--vellum);
+  }
+  .stat.hp .v{color:var(--ichor)}
+
+  .read{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    font-size:1.2rem;
+    line-height:1.5;
+    text-align:center;
+    color:#3a352a;
+    max-width:56ch;
+    margin:0 auto 30px;
+    padding:0 6px;
+  }
+  .read .thesis{
+    display:block;
+    font-style:normal;
+    font-variant:small-caps;
+    letter-spacing:.06em;
+    color:var(--verdigris);
+    font-size:.88rem;
+    margin-top:12px;
+  }
+
+  .apps{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:12px;
+  }
+  .app{
+    border:1px solid var(--rule);
+    border-left:2px solid var(--copper-deep);
+    border-radius:2px;
+    padding:13px 15px;
+    background:#f7f3ea;
+    position:relative;
+  }
+  .app.crown{border-left-color:var(--gold);background:#fbf3df}
+  .app .app-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .app .app-name{
+    font-family:"Cinzel",serif;
+    font-size:.82rem;
+    letter-spacing:.04em;
+    color:var(--vellum);
+  }
+  .app .count{
+    font-family:"Cinzel",serif;
+    font-size:.66rem;
+    letter-spacing:.1em;
+    color:var(--copper);
+    white-space:nowrap;
+  }
+  .app .app-desc{
+    font-family:"Cormorant Garamond",serif;
+    font-style:italic;
+    color:var(--vellum-dim);
+    font-size:.98rem;
+    margin:5px 0 7px;
+    line-height:1.4;
+  }
+  .app .app-mech{font-size:.9rem;color:#4a4638;line-height:1.45}
+  .app .app-mech .chk{color:var(--verdigris);font-variant:small-caps;letter-spacing:.03em}
+  .app .app-hp{
+    font-family:"Cinzel",serif;
+    font-size:.56rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--vellum-faint);
+    margin-top:8px;
+  }
+  .app .reroll{
+    position:absolute;top:10px;right:10px;
+    background:none;border:1px solid var(--rule);border-radius:50%;
+    width:22px;height:22px;line-height:1;
+    color:var(--vellum-faint);cursor:pointer;font-size:.8rem;
+    display:none;align-items:center;justify-content:center;
+    transition:color .15s,border-color .15s,transform .3s;
+  }
+  .app:hover .reroll{display:flex}
+  .app .reroll:hover{color:var(--gold);border-color:var(--gold)}
+  .app .reroll:focus-visible{outline:2px solid var(--verdigris);outline-offset:2px;display:flex}
+  .app .reroll.spin{transform:rotate(360deg)}
+  .app .fused-mark{
+    font-family:"EB Garamond",serif;font-style:italic;
+    color:var(--copper);font-size:.78rem;display:block;margin-top:6px;
+  }
+
+  /* twists */
+  .twist{
+    border:1px solid var(--copper-deep);
+    border-radius:2px;
+    padding:16px 20px;
+    margin:22px 0 0;
+    background:linear-gradient(180deg,#fdf7e8,#f7f2e6);
+  }
+  .twist.ogre{border-color:var(--ichor);background:linear-gradient(180deg,#fdeee9,#f8f1e9)}
+  .twist h4{
+    font-family:"Cinzel",serif;font-weight:600;font-size:.92rem;
+    letter-spacing:.06em;margin:0 0 6px;color:var(--gold);
+  }
+  .twist.ogre h4{color:var(--ichor)}
+  .twist p{margin:0 0 8px;color:#4a4638;font-size:.98rem}
+  .twist ul{margin:8px 0 0;padding:0 0 0 4px;list-style:none}
+  .twist li{padding:4px 0 4px 18px;position:relative;color:#4a4638;font-size:.96rem;line-height:1.45}
+  .twist li::before{content:"◈";position:absolute;left:0;color:var(--copper);font-size:.7rem;top:6px}
+  .twist li b{color:var(--vellum);font-variant:small-caps;letter-spacing:.03em;font-weight:500}
+
+  .prisma{margin:14px 0 0}
+  .prisma .pr-label{
+    font-family:"Cinzel",serif;font-size:.58rem;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--vellum-faint);margin-bottom:8px;
+  }
+  .prisma-row{display:flex;gap:6px;flex-wrap:wrap}
+  .pr-axis{
+    flex:1 1 60px;text-align:center;border:1px solid var(--rule);
+    border-radius:2px;padding:6px 4px;background:#f7f3ea;
+  }
+  .pr-axis .ax{font-family:"Cinzel",serif;color:var(--gold);font-size:.9rem}
+  .pr-axis .pv{font-family:"Cinzel",serif;color:var(--vellum);font-size:1.1rem;display:block;margin-top:2px}
+  .prisma .caption{
+    font-family:"EB Garamond",serif;font-style:italic;color:var(--vellum-faint);
+    font-size:.82rem;margin-top:8px;
+  }
+
+  .empty{
+    text-align:center;color:var(--vellum-faint);font-family:"Cormorant Garamond",serif;
+    font-style:italic;font-size:1.1rem;padding:14px 20px 30px;
+  }
+
+  footer{
+    text-align:center;padding:30px 20px 46px;color:var(--vellum-faint);
+    font-family:"EB Garamond",serif;font-style:italic;font-size:.86rem;
+    border-top:1px solid var(--rule);max-width:1120px;margin:0 auto;
+  }
+
+  @media (max-width:760px){
+    .book,.book.collapsed{grid-template-columns:1fr}
+    nav.spine{
+      border-right:none;border-bottom:1px solid var(--rule);
+      padding:22px 0;
+    }
+    .book.collapsed nav.spine{padding:14px 0}
+    .spine ul{display:flex;flex-wrap:wrap;gap:2px 4px;padding:0 16px}
+    .spine .entry{width:auto;border-left:none;border-bottom:2px solid transparent;padding:6px 12px}
+    .spine .entry.active{border-left:none;border-bottom-color:var(--copper);background:none}
+    .spine .entry .by{display:none}
+    /* horizontal rail on mobile */
+    .book.collapsed .rail{
+      flex-direction:row;justify-content:center;
+      width:auto;height:auto;min-height:0;padding:6px 0;gap:10px;
+    }
+    .rail-txt{writing-mode:horizontal-tb;text-orientation:initial}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="kicker">A Field-Reliquary of Mnestis</p>
+  <h1>A Kaarthōtian Bestiary</h1>
+  <p class="sub">of the drowned, dreaming, & still-living</p>
+  <div class="divider-mark">✦ ✦ ✦</div>
+</header>
+
+<div class="book collapsed">
+  <nav class="spine" aria-label="Bestiary index">
+    <button class="rail" id="railOpen" aria-label="Open index" aria-expanded="false">
+      <span class="rail-chev">›</span>
+      <span class="rail-txt">Index</span>
+    </button>
+    <div class="spine-body" id="spineBody">
+      <div class="spine-head">
+        <h2>Index</h2>
+        <button class="spine-toggle" id="spineClose" aria-label="Collapse index" aria-expanded="false">‹</button>
+      </div>
+      <ul id="entryList"></ul>
+    </div>
+  </nav>
+
+  <main class="folio" id="folio">
+   <div class="folio-view" data-view="moluth">
+    <p class="names">Zooarchs · Limb-Gardens</p>
+    <h2 class="title">Moluth</h2>
+    <p class="aka">Living reliquaries of another age, another time.</p>
+
+    <div class="epigraph">
+      <span class="dropcap">T</span>he shell of the mature Moluth — barnacled and ringed — resembles those spiralling tidal stones as found within the Sea. Yet beneath their pelagic exterior there lies not one singular creature, but an entire chorus of strange, amorphous life: a zooidic colony of impossible, protean things.
+    </div>
+
+    <div class="prose">
+      <p class="section-label">Behaviour &amp; Impact</p>
+      <p class="lede">Sentience is determined by appendage. Baseline is animal-level instinct; a <span class="term">Crown of Polyps</span> grants human-like intellect, overriding all other behavioural impulses. The number of appendages is set by size, and appendages <em>stack</em>.</p>
+      <p>Their appendages — feelers, limbs, mouths, eyes, and organs stranger still — act of their own accord. Some delicately survey the world; others whisper in a thousand inhuman tongues; others still drip with noxious ichor, unfurling tendrils tipped in human hands.</p>
+    </div>
+
+    <p class="section-label">Size &amp; Bulk — d20</p>
+    <table class="codex-table">
+      <caption>Roll once to determine the specimen's scale, vitality, and number of appendages.</caption>
+      <thead><tr><th>Roll</th><th>Scale</th><th>Vitality</th><th>Limbs</th></tr></thead>
+      <tbody>
+        <tr><td class="roll">1–5</td><td><span class="nm">Dog-sized</span><small>Highly mobile. A naked, skittering mass.</small></td><td class="hp">10 HP</td><td class="roll">2</td></tr>
+        <tr><td class="roll">6–12</td><td><span class="nm">Human-sized</span><small>Coherent. Ambulatory.</small></td><td class="hp">35 HP</td><td class="roll">4</td></tr>
+        <tr><td class="roll">13–18</td><td><span class="nm">Cart-sized</span><small>Sluggish to move. Likes to collect things.</small></td><td class="hp">60 HP</td><td class="roll">6</td></tr>
+        <tr><td class="roll">19–20</td><td><span class="nm">House-sized</span><small>Fused to the environment, immured for centuries; warm, copper-scented water pools around its base; a trove hoarded in its shell.</small></td><td class="hp">100 HP</td><td class="roll">10</td></tr>
+      </tbody>
+    </table>
+
+    <p class="section-label">Appendages — d20, once per limb</p>
+    <table class="codex-table">
+      <caption>Roll on this table once for each appendage the specimen possesses. Duplicates stack.</caption>
+      <thead><tr><th>Roll</th><th>Appendage</th></tr></thead>
+      <tbody id="parts-table"></tbody>
+    </table>
+
+    <section class="divination" aria-label="Specimen autoroller">
+      <div class="div-head">
+        <h3>Conjure a Specimen</h3>
+        <p>Cast the dice and a single Moluth crawls out of the tables — sized, limbed, and already wanting something.</p>
+      </div>
+      <div class="conjure-wrap">
+        <button class="conjure" id="conjure">Cast the Dice</button>
+        <span class="conjure-sub">size · appendages · disposition, resolved in one throw</span>
+      </div>
+      <div id="result" aria-live="polite">
+        <p class="empty">No specimen yet stirs. Cast the dice to wake one.</p>
+      </div>
+    </section>
+   </div>
+
+   <div class="folio-view" data-view="pseudo-gods" hidden>
+    <p class="names">Kinds Unto Themselves</p>
+    <h2 class="title">Pseudo Gods</h2>
+
+    <div class="epigraph">
+      <span class="dropcap">T</span>here are beings in this world which fit no taxonomy. They are not species, for they hail from no lineage. They are one-off castaways, carved from the very fabric of things; beings from dimensions utterly foreign and unknown. Each is a kind unto itself.
+    </div>
+
+    <p class="section-label">Running the Encounter</p>
+    <div class="tenets">
+      <div class="tenet"><span class="tenet-h">Scale the incomprehensibility.</span> Players should never fully understand what they are dealing with. Provide details that contradict, descriptions that fail, motives that don't resolve into human logic. The more they learn, the less they should know.</div>
+      <div class="tenet"><span class="tenet-h">Power should feel absolute.</span> A Pseudo God cannot be defeated through direct confrontation. Combat is not a solution; though it can a method of suicide. If the players survive, it will be through cleverness, negotiation, exploitation, or simple luck.</div>
+      <div class="tenet"><span class="tenet-h">Benevolence does not mean safety.</span> A Pseudo God that wishes to help may be more dangerous than the one who wishes destruction. Its gifts may be curses in disguise, and its assistance may come with prices not immediately apparent.</div>
+    </div>
+
+    <div class="prose"><p>Roll or choose from the following tables to generate a unique Pseudo God. The results are prompts, not prescriptions — interpret freely and combine unexpectedly. Remember that contradiction is not a flaw but a feature. These things should not make sense.</p></div>
+
+    <section class="divination" aria-label="Pseudo God autoroller">
+      <div class="div-head">
+        <h3>Raise a Pseudo God</h3>
+        <p>Seven throws resolve at once — two contradictory forms, then how it regards you, what it wants, how it reaches, and what constrains it.</p>
+      </div>
+      <div class="conjure-wrap">
+        <button class="conjure" id="pg-conjure">Cast the Dice</button>
+        <span class="conjure-sub">form ×2 · disposition · drive · manifestation · limitation</span>
+      </div>
+      <div id="pg-result" aria-live="polite">
+        <p class="empty">Nothing has yet been called through. Cast the dice to raise one.</p>
+      </div>
+    </section>
+
+    <p class="section-label">Form — d10, rolled twice</p>
+    <table class="codex-table"><caption>A Pseudo God wears contradictory forms. Roll twice; for each, roll d10 for the entry, then again — 1–5 or 6–10 — for its cast.</caption>
+      <thead><tr><th>Roll</th><th>Form</th></tr></thead>
+      <tbody id="pg-form-table"></tbody>
+    </table>
+
+    <p class="section-label">Disposition — d10</p>
+    <table class="codex-table"><caption>How it regards lesser beings.</caption>
+      <thead><tr><th>Roll</th><th>Regard</th></tr></thead>
+      <tbody id="pg-disp-table"></tbody>
+    </table>
+
+    <p class="section-label">Drives — d10</p>
+    <table class="codex-table"><caption>What it wants.</caption>
+      <thead><tr><th>Roll</th><th>Drive</th></tr></thead>
+      <tbody id="pg-drive-table"></tbody>
+    </table>
+
+    <p class="section-label">Manifestation — d10</p>
+    <table class="codex-table"><caption>How it expresses power.</caption>
+      <thead><tr><th>Roll</th><th>Manifestation</th></tr></thead>
+      <tbody id="pg-manif-table"></tbody>
+    </table>
+
+    <p class="section-label">Limitation — d10</p>
+    <table class="codex-table"><caption>Even gods have constraints.</caption>
+      <thead><tr><th>Roll</th><th>Constraint</th></tr></thead>
+      <tbody id="pg-limit-table"></tbody>
+    </table>
+   </div>
+
+   <div class="folio-view soon-view" data-view="soon" hidden>
+    <h2 class="title soon-title" id="soonTitle">—</h2>
+    <div class="soon-block">
+      <p class="soon-tag">Coming soon</p>
+      <p class="soon-msg">This folio has not yet been transcribed. It will appear here as the bestiary grows.</p>
+    </div>
+   </div>
+  </main>
+</div>
+
+<footer>
+  Kaarthōsis — a dying-earth reliquary set in the world of Mnestis. Rolls follow the tables above; the reading is a prompt, not a verdict.
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var SIZES = [
+    {min:1,max:5,  name:"Dog-sized",   hp:10,  app:2,  note:"A naked, skittering mass. Highly mobile."},
+    {min:6,max:12, name:"Human-sized", hp:35,  app:4,  note:"Coherent. Ambulatory."},
+    {min:13,max:18,name:"Cart-sized",  hp:60,  app:6,  note:"Sluggish to move. Likes to collect things."},
+    {min:19,max:20,name:"House-sized", hp:100, app:10, note:"Fused to the environment, immured for centuries; copper-scented water pools at its base."}
+  ];
+
+  // tag drives the disposition-reading engine
+  var PARTS = [
+    {min:1, max:3,  name:"Ambulacral Fringe",          tag:"motion", desc:"A skirt of hundreds of tube-feet, each ending in a flat, wet disc.", mech:"Grants adhesion. Ignores difficult terrain and climbs any surface."},
+    {min:4, max:5,  name:"Cartilaginous Petal Fingers",tag:"sense",  desc:"A splayed blossom of cartilage-jointed digits, opening and collapsing like an anemone's crown.", mech:"Grants touch-sense. Advantage on Perception to notice, track, or identify by vibration and texture. May filch a held object on a contested [Sleight of Hand] check."},
+    {min:6, max:7,  name:"Bulbous Tongue Grove",       tag:"speech", desc:"A bouquet of semi-autonomous tongues, extruding from the shell like a babbling flail.", mech:"Grants crude speech."},
+    {min:8, max:9,  name:"Ciliated Feeding Funnel",    tag:"ingest", desc:"A gaping maw lined with whisker-thin tendrils, filter-feeding upon the open air.", mech:"Filter-feeds upon the open air, drawing sustenance from motes and spoor."},
+    {min:10,max:11, name:"Human Hand Cluster",         tag:"grasp",  desc:"A bouquet of mismatched, emaciated hands, grasping.", mech:"Grapples on a contested [Athletics] check. Each cluster can also wield one human implement — including dropped firearms."},
+    {min:12,max:12, name:"Secretion Furnace",          tag:"reach",  desc:"A hardened gland that melts protein into bio-glue.", mech:"Ranged. Creates adhesive terrain. A creature caught within tests [Athletics] or becomes immobilised for d3 turns."},
+    {min:13,max:13, name:"Stomoclaw",                  tag:"grasp",  desc:"A gripping, crushing appendage that seizes prey.", mech:"On a contested [Athletics] hit, the target is dragged inward, toward interior organs."},
+    {min:14,max:14, name:"Chitinous Spear-Tongue",    tag:"reach",  desc:"A sharp, spear-like tongue that projects and draws in what it pierces.", mech:"Ranged. Skewers for d3 and reels the target into melee."},
+    {min:15,max:15, name:"Nosulary Stalks",           tag:"sense",  desc:"A frond-like appendage tipped with eye-spots that induce temporary paralysis.", mech:"Grants vision. Forces a contested [Attention] check; on a failure, paralysed for d3 turns."},
+    {min:16,max:16, name:"Apologic Pheromones",       tag:"speech", desc:"A weeping gland that breathes out a placating, sorrowful musk.", mech:"Contest [Metacognition]; on a failure, the target cannot bring itself to harm the Moluth this turn, and instead feels compelled to appease or offer tribute."},
+    {min:17,max:17, name:"Crown of Polyps",           tag:"crown",  desc:"A wriggling, coral-like appendage of dense neural tissue.", mech:"Grants human-level sentience. The Moluth gains a 10-point PRISMA spread and acts as a thinking creature — the only kind that can be talked down, bargained with, or coaxed."},
+    {min:18,max:18, name:"Vault of Teeth",            tag:"ingest", desc:"An internal stomach-chamber lined with teeth, reducing anything trapped within to pulp.", mech:"An ingested target takes 1d6 damage each turn and must escape on a contested [Athletics] check."},
+    {min:19,max:19, name:"Returning Womb",            tag:"ingest", desc:"Births a perfect copy of whatever the Moluth ingests, replete with the lifeform's memories.", mech:"An ingested target (dead or alive) is reborn a scene or two later as a copy carrying the original memories and skills. Anything organic can be copied."},
+    {min:20,max:20, name:"Aberrant Novelty",          tag:"novel",  desc:"Something wholly new.", mech:"Roll twice and fuse the results, or invent an organ befitting a protean, impossible thing."}
+  ];
+
+  var EPITHETS = {
+    "Crown of Polyps":"Crowned Interlocutor",
+    "Returning Womb":"Second Birth",
+    "Vault of Teeth":"Drowned Gullet",
+    "Stomoclaw":"Seizing Deep",
+    "Human Hand Cluster":"Hundred-Handed Almsman",
+    "Chitinous Spear-Tongue":"Reeling Spire",
+    "Secretion Furnace":"Glue-Kiln",
+    "Ciliated Feeding Funnel":"Open Mouth",
+    "Nosulary Stalks":"Watcher of Stalks",
+    "Apologic Pheromones":"Weeping Penitent",
+    "Bulbous Tongue Grove":"Babbling Flail",
+    "Cartilaginous Petal Fingers":"Anemone Hand",
+    "Ambulacral Fringe":"Skittering Skirt"
+  };
+  var EPITHET_PRIORITY = ["Crown of Polyps","Returning Womb","Vault of Teeth","Stomoclaw",
+    "Human Hand Cluster","Chitinous Spear-Tongue","Secretion Furnace","Ciliated Feeding Funnel",
+    "Nosulary Stalks","Apologic Pheromones","Bulbous Tongue Grove","Cartilaginous Petal Fingers",
+    "Ambulacral Fringe"];
+
+  function d20(){ return Math.floor(Math.random()*20)+1; }
+  function resolve(table,n){
+    for(var i=0;i<table.length;i++){ if(n>=table[i].min && n<=table[i].max) return table[i]; }
+    return table[table.length-1];
+  }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function markChecks(s){ return esc(s).replace(/\[([^\]]+)\]/g,'<span class="chk">$1</span>'); }
+
+  // ---- render the reference parts table once ----
+  (function renderParts(){
+    var body = document.getElementById("parts-table");
+    var rows = "";
+    PARTS.forEach(function(p){
+      var r = p.min===p.max ? String(p.min) : (p.min+"–"+p.max);
+      rows += '<tr><td class="roll">'+r+'</td><td><span class="nm">'+esc(p.name)+
+        '</span><small>'+esc(p.desc)+' — '+markChecks(p.mech).replace(/^<span class="chk">/,'<span class="chk">')+'</small></td></tr>';
+    });
+    body.innerHTML = rows;
+  })();
+
+  // ---- roll a single appendage (handles Aberrant Novelty fusion) ----
+  function rollAppendage(){
+    var n = d20();
+    var part = resolve(PARTS, n);
+    if(part.tag === "novel"){
+      var a = rollNonNovel(), b = rollNonNovel();
+      return {roll:n, part:part, fused:[a, b]};
+    }
+    return {roll:n, part:part, fused:null};
+  }
+  function rollNonNovel(){
+    var n, part;
+    do { n = d20(); part = resolve(PARTS, n); } while(part.tag === "novel");
+    return {roll:n, part:part};
+  }
+
+  // ---- 10-point PRISMA spread across six axes ----
+  function prismaSpread(){
+    var axes = ["P","R","I","S","M","A"], out=[0,0,0,0,0,0];
+    for(var i=0;i<10;i++){ out[Math.floor(Math.random()*6)]++; }
+    return axes.map(function(a,i){ return {axis:a, val:out[i]}; });
+  }
+
+  // ---- disposition-reading engine: "the appendages become the behaviour" ----
+  function readDisposition(apps){
+    var tags = {motion:0,sense:0,speech:0,grasp:0,ingest:0,reach:0,crown:0};
+    var names = {};
+    apps.forEach(function(a){
+      var parts = a.fused ? a.fused.map(function(f){return f.part;}) : [a.part];
+      parts.forEach(function(p){
+        tags[p.tag] = (tags[p.tag]||0)+1;
+        names[p.name] = (names[p.name]||0)+1;
+      });
+    });
+    var read;
+    if(tags.crown){
+      read = "A thinking thing. The crown's intellect drowns out base instinct — this one can be reasoned with, and would sooner strike a bargain than a blow.";
+    } else if(names["Returning Womb"]){
+      read = "It wants to keep things. What it swallows it remakes, and the copy walks out later wearing a dead companion's memories.";
+    } else if(tags.grasp && (tags.speech || names["Ciliated Feeding Funnel"])){
+      read = "A fumbling, half-clever trader-thing — it gropes toward exchange it does not quite understand.";
+    } else if(tags.ingest && tags.grasp){
+      read = "A sentient stomach. It wants only to pull things inward.";
+    } else if(tags.motion && tags.reach){
+      read = "An ambush predator — patient, adhesive, and quick to reel a straggler in.";
+    } else if(tags.ingest){
+      read = "A slow, hungry mouth of a creature, content to wait for what drifts too near.";
+    } else if(tags.grasp){
+      read = "A grasping, hoarding thing that reaches before it thinks.";
+    } else if(tags.sense && !tags.grasp && !tags.ingest){
+      read = "More sensor than predator — it surveys, tracks, and mostly wishes to be left to its watching.";
+    } else {
+      read = "An instinct-driven congregation of parts, its wants written only in the limbs it happens to wear.";
+    }
+    return read;
+  }
+
+  function epithetFor(apps){
+    var present = {};
+    apps.forEach(function(a){
+      if(a.fused){ a.fused.forEach(function(f){present[f.part.name]=1;}); }
+      else { present[a.part.name]=1; }
+    });
+    for(var i=0;i<EPITHET_PRIORITY.length;i++){
+      if(present[EPITHET_PRIORITY[i]]) return EPITHETS[EPITHET_PRIORITY[i]];
+    }
+    return "Nameless Congregation";
+  }
+
+  // ---- group identical appendages for tidy display ----
+  function groupApps(apps){
+    var order = [], map = {};
+    apps.forEach(function(a){
+      var key = a.fused
+        ? "fused:"+a.fused.map(function(f){return f.part.name;}).sort().join("+")
+        : a.part.name;
+      if(!map[key]){ map[key] = {sample:a, count:0}; order.push(key); }
+      map[key].count++;
+    });
+    return order.map(function(k){ return map[k]; });
+  }
+
+  var current = null; // {sizeRoll,size,apps}
+
+  function render(){
+    var res = document.getElementById("result");
+    var s = current.size, apps = current.apps;
+    var crownCount = 0;
+    apps.forEach(function(a){
+      if(a.fused){ a.fused.forEach(function(f){ if(f.part.tag==="crown") crownCount++; }); }
+      else if(a.part.tag==="crown") crownCount++;
+    });
+
+    var rollList = apps.map(function(a){
+      return a.fused ? (a.roll+"→"+a.fused[0].roll+"+"+a.fused[1].roll) : a.roll;
+    }).join(" · ");
+
+    var html = "";
+    html += '<div class="specimen">';
+    html += '<p class="spec-names">A single specimen, conjured</p>';
+    html += '<p class="epithet"><span class="the">the </span>'+esc(epithetFor(apps))+'</p>';
+    html += '<p class="rollstamp">size <b>'+current.sizeRoll+'</b> &nbsp;·&nbsp; limbs '+esc(rollList)+'</p>';
+
+    // stat line
+    html += '<div class="statline">';
+    html += '<div class="stat"><span class="k">Scale</span><span class="v">'+esc(s.name)+'</span></div>';
+    html += '<div class="stat hp"><span class="k">Vitality</span><span class="v">'+s.hp+' HP</span></div>';
+    html += '<div class="stat"><span class="k">Appendages</span><span class="v">'+s.app+'</span></div>';
+    html += '<div class="stat"><span class="k">Sentience</span><span class="v">'+(crownCount?'Crowned':'Instinct')+'</span></div>';
+    html += '</div>';
+
+    // reading
+    html += '<p class="read">'+esc(readDisposition(apps))+
+            '<span class="thesis">The appendages become the behaviour.</span></p>';
+
+    // appendage cards
+    html += '<div class="apps">';
+    var grouped = groupApps(apps);
+    grouped.forEach(function(g,gi){
+      var a = g.sample;
+      var idx = apps.indexOf(a);
+      if(a.fused){
+        var f0=a.fused[0].part, f1=a.fused[1].part;
+        html += '<div class="app">';
+        html += '<button class="reroll" data-i="'+idx+'" title="Re-roll this limb" aria-label="Re-roll this appendage">↻</button>';
+        html += '<div class="app-top"><span class="app-name">Aberrant Novelty</span>'+(g.count>1?'<span class="count">×'+g.count+'</span>':'')+'</div>';
+        html += '<p class="app-desc">Something wholly new — '+esc(f0.name)+' fused with '+esc(f1.name)+'.</p>';
+        html += '<p class="app-mech"><em>'+esc(f0.name)+':</em> '+markChecks(f0.mech)+'</p>';
+        html += '<p class="app-mech" style="margin-top:5px"><em>'+esc(f1.name)+':</em> '+markChecks(f1.mech)+'</p>';
+        html += '<span class="fused-mark">One impossible organ, two natures.</span>';
+        html += '<p class="app-hp">Object-bound skill · 5 HP each</p>';
+        html += '</div>';
+      } else {
+        var crown = a.part.tag==="crown";
+        html += '<div class="app'+(crown?' crown':'')+'">';
+        html += '<button class="reroll" data-i="'+idx+'" title="Re-roll this limb" aria-label="Re-roll this appendage">↻</button>';
+        html += '<div class="app-top"><span class="app-name">'+esc(a.part.name)+'</span>'+(g.count>1?'<span class="count">×'+g.count+'</span>':'')+'</div>';
+        html += '<p class="app-desc">'+esc(a.part.desc)+'</p>';
+        html += '<p class="app-mech">'+markChecks(a.part.mech)+'</p>';
+        html += '<p class="app-hp">Object-bound skill · 5 HP</p>';
+        html += '</div>';
+      }
+    });
+    html += '</div>'; // .apps
+
+    // ---- emergent twists ----
+    if(crownCount >= 2){
+      html += '<div class="twist ogre"><h4>A Twin-headed Ogre</h4>'+
+        '<p>Two crowns rode in on the dice. Rather than compounding, they have split into distinct personalities — one body, several minds, rarely in accord. Run them as separate voices at the table; let them argue.</p></div>';
+    }
+    if(crownCount >= 1){
+      var spread = prismaSpread();
+      html += '<div class="twist"><h4>A Mercantile Moluth</h4>';
+      html += '<p>Crowned, and so open to parley. Communication is difficult, but for the bold and clever a willing Moluth offers much:</p>';
+      html += '<ul>';
+      html += '<li><b>The Atavistic Draft</b> — a genetic-lottery drink; rare, dangerous, lauded over by ichor merchants. <em>(pg. TBD)</em></li>';
+      html += '<li><b>Moluth Brine</b> — drawn from the copper-scented pools of its base. <em>(pg. TBD)</em></li>';
+      html += '<li><b>A Trove of Items Collected</b> — a long life of hoarding, from baubles to major arcana. Its asking-price is the GM\'s to name.</li>';
+      html += '<li><b>An Appendage Borrowed</b> — for the right price, a limb departs the colony to travel with the party, run as an object-bound skill (5 HP).</li>';
+      html += '</ul>';
+      html += '<div class="prisma"><div class="pr-label">10-point PRISMA spread</div><div class="prisma-row">';
+      spread.forEach(function(p){
+        html += '<div class="pr-axis"><span class="ax">'+p.axis+'</span><span class="pv">'+p.val+'</span></div>';
+      });
+      html += '</div><p class="caption">Ten points scattered across the six PRISMA axes — assign to your table\'s stats as you see fit.</p></div>';
+      html += '</div>';
+    }
+
+    html += '</div>'; // .specimen
+    res.innerHTML = html;
+  }
+
+  function conjure(){
+    var sizeRoll = d20();
+    var size = resolve(SIZES, sizeRoll);
+    var apps = [];
+    for(var i=0;i<size.app;i++){ apps.push(rollAppendage()); }
+    current = {sizeRoll:sizeRoll, size:size, apps:apps};
+    render();
+  }
+
+  // ---- collapsible index ----
+  (function(){
+    var book = document.querySelector(".book");
+    var railBtn = document.getElementById("railOpen");
+    var closeBtn = document.getElementById("spineClose");
+    function setCollapsed(c){
+      book.classList.toggle("collapsed", c);
+      railBtn.setAttribute("aria-expanded", String(!c));
+      closeBtn.setAttribute("aria-expanded", String(!c));
+      if(!c){ closeBtn.focus(); }
+    }
+    closeBtn.addEventListener("click", function(){ setCollapsed(true); });
+    railBtn.addEventListener("click", function(){ setCollapsed(false); });
+  })();
+
+  // ---- creature roster + hash routing ----
+  (function(){
+    var ENTRIES = [
+      {slug:"archmagi",                name:"Archmagi"},
+      {slug:"atrox-the-pursuant",      name:"Atrox the Pursuant"},
+      {slug:"attractor-ghosts",        name:"Attractor Ghosts"},
+      {slug:"carnomycelia",            name:"Carnomycelia"},
+      {slug:"chiliads",                name:"Chiliads"},
+      {slug:"creeping-tideweed",       name:"Creeping Tideweed"},
+      {slug:"crownwraith",             name:"Crownwraith, The"},
+      {slug:"driftmane",               name:"Driftmane"},
+      {slug:"dust-shepherds",          name:"Dust Shepherds"},
+      {slug:"great-formicaries",       name:"Great Formicaries, The"},
+      {slug:"great-white-basalt-apes", name:"Great White Basalt Apes"},
+      {slug:"hyladons",                name:"Hyladons"},
+      {slug:"landsknechts",            name:"Landsknechts"},
+      {slug:"moluth",                  name:"Moluth", by:"Zooarchs · Limb-Gardens", ready:true},
+      {slug:"nootic-mass",             name:"Noōtic Mass"},
+      {slug:"ouroliths",               name:"Ouroliths"},
+      {slug:"panhumanity",             name:"Panhumanity"},
+      {slug:"pseudo-gods",             name:"Pseudo Gods", by:"Kinds Unto Themselves", ready:true},
+      {slug:"psychopomps",             name:"Psychopomps"},
+      {slug:"rain-reapers",            name:"Rain Reapers"},
+      {slug:"ruinous-thaumaturge",     name:"Ruinous Thaumaturge, The"},
+      {slug:"stowaway-vine",           name:"Stowaway Vine"},
+      {slug:"suturlings",              name:"Suturlings"},
+      {slug:"thuul-the-deep",          name:"Thuul the Deep"},
+      {slug:"tree-hydras",             name:"Tree Hydras"},
+      {slug:"tricephalodons",          name:"Tricephalodons"},
+      {slug:"vaultwood",               name:"Vaultwood"},
+      {slug:"wyvern-moths",            name:"Wyvern Moths"},
+      {slug:"ziggurats",               name:"Ziggurats"}
+    ];
+    var DEFAULT = "moluth";
+    var list = document.getElementById("entryList");
+    var allViews = document.querySelectorAll(".folio-view");
+    var soonView = document.querySelector('.folio-view[data-view="soon"]');
+    var soonTitle = document.getElementById("soonTitle");
+    var btns = {};
+
+    ENTRIES.forEach(function(e){
+      var li = document.createElement("li");
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "entry" + (e.ready ? "" : " soon");
+      b.setAttribute("data-slug", e.slug);
+      var sub = e.ready
+        ? (e.by ? '<span class="by">' + esc(e.by) + '</span>' : '')
+        : '<span class="seal-note">Coming soon</span>';
+      b.innerHTML = '<span class="nm">' + esc(e.name) + '</span> ' + sub;
+      b.addEventListener("click", function(){ go(e.slug); });
+      li.appendChild(b);
+      list.appendChild(li);
+      btns[e.slug] = b;
+    });
+
+    function find(slug){
+      for(var i=0;i<ENTRIES.length;i++){ if(ENTRIES[i].slug === slug) return ENTRIES[i]; }
+      return null;
+    }
+    function hashSlug(){ return (location.hash || "").replace(/^#/, "").toLowerCase(); }
+
+    function activate(e){
+      var ready = !!e.ready;
+      for(var i=0;i<allViews.length;i++){ allViews[i].hidden = true; }
+      var view = ready ? document.querySelector('.folio-view[data-view="'+e.slug+'"]') : null;
+      if(view){ view.hidden = false; }
+      else { soonView.hidden = false; soonTitle.textContent = e.name; ready = false; }
+      Object.keys(btns).forEach(function(s){
+        var on = (s === e.slug);
+        btns[s].classList.toggle("active", on);
+        if(on){ btns[s].setAttribute("aria-current", "true"); }
+        else { btns[s].removeAttribute("aria-current"); }
+      });
+      document.title = (ready ? "" : e.name + " · ") + "A Kaarthōtian Bestiary";
+    }
+    function applyRoute(){ activate(find(hashSlug()) || find(DEFAULT)); }
+    function go(slug){
+      if(hashSlug() === slug){ applyRoute(); }   // same hash won't fire hashchange
+      else { location.hash = slug; }
+    }
+
+    window.addEventListener("hashchange", applyRoute);
+    applyRoute();
+  })();
+
+  document.getElementById("conjure").addEventListener("click", conjure);
+
+  // per-appendage reroll (event delegation)
+  document.getElementById("result").addEventListener("click", function(e){
+    var btn = e.target.closest(".reroll");
+    if(!btn || !current) return;
+    var i = parseInt(btn.getAttribute("data-i"),10);
+    if(isNaN(i) || i<0 || i>=current.apps.length) return;
+    current.apps[i] = rollAppendage();
+    render();
+  });
+
+  // ---- Pseudo God: reference tables + autoroller ----
+  (function(){
+    var d10 = function(){ return Math.floor(Math.random()*10)+1; };
+
+    var FORM = [
+      {a:{name:"Humanoid, but wrong", desc:"The proportions are off. Its joints bend incorrectly, or are strangely disproportionate. Its face has yet to master human expression."},
+       b:{name:"Mirror duplicate", desc:"It looks like you. It looks like whoever is looking at it. The reflection does not always do as the original bids."}},
+      {a:{name:"Geometric", desc:"A shape that hurts to perceive. Angles that don't add up. Its surfaces face directions which seem to not exist."},
+       b:{name:"Hole in the world", desc:"Not a thing but an absence. A space empty where something should be. Look too long and you begin to lose track of time."}},
+      {a:{name:"Fluid form", desc:"No fixed form. It flows and shifts, becoming what it needs to become or what it thinks is needed."},
+       b:{name:"Amorphous architecture", desc:"A living architecture that flows like water yet holds its shape like stone. Doorways open into other places. its interiors non-euclidean."}},
+      {a:{name:"Organic colossal", desc:"A living thing scaled beyond reason. A hand the size of a hill. An eye like a placid lake."},
+       b:{name:"Flayed enormity", desc:"No skin. Only muscle and tendon and the wet gleam of exposed tissues. It towers before you."}},
+      {a:{name:"Skeletal amalgam", desc:"Bones from dozens of species, fused together into a single impossible confluence. It should not be able to move, yet it does."},
+       b:{name:"Death composite", desc:"Bodies. Many bodies. Fused and stacked and woven together. It wears them like a garment."}},
+      {a:{name:"A Mechanical ruin", desc:"Ancient machinery thrums with some terrible purpose. Gears that grind with hunger. Pistons like heartbeats thumping."},
+       b:{name:"Crystalline growth", desc:"Faceted surfaces refract light into colours which have no names. It chimes when it moves. The sound is eerily pleasant."}},
+      {a:{name:"Light and shadow", desc:"It has no solid form, only illumination and its absence, patterns that move with intention."},
+       b:{name:"Invisible pressure", desc:"It has no visible form. You know it is there because reality bends around it, because light refuses to touch, because animals flee from it."}},
+      {a:{name:"Insectile nightmare", desc:"Chitin and compound eyes and too many limbs, scaled up to proportions which make the mind revolt."},
+       b:{name:"Swarm-minded", desc:"Thousands of smaller things moving as one. Insects, machines, motes of light \u2014 each worthless alone, together something else entirely."}},
+      {a:{name:"Terribly beautiful", desc:"The most perfect thing you have ever seen. You cannot look away. You have to remember how to breathe."},
+       b:{name:"Indescribable", desc:"The mind refuses to process it. Witnesses give contradictory accounts. Drawings of it fail. It exists, and that is all that can be said."}},
+      {a:{name:"Fungal cathedral", desc:"A fruiting body the size of a building, releasing spores that carry its thoughts and intentions."},
+       b:{name:"Child-shaped", desc:"Small, soft, and apparently helpless."}}
+    ];
+    var DISP = [
+      {min:1,max:2,  name:"Benevolent, alien", desc:"It wishes to help. Though its understanding of the word may not align with yours."},
+      {min:3,max:3,  name:"Hostile, instinctive", desc:"It destroys because destruction is its nature. There is no malice in its thoughts. Fire does not hate the wood."},
+      {min:4,max:4,  name:"Curious, clinical", desc:"It finds lesser beings interesting. It studies them."},
+      {min:5,max:6,  name:"Indifferent, oblivious", desc:"It does not notice you, as you are beneath its perception. Do not give it a reason to notice. Or do. The choice is yours."},
+      {min:7,max:7,  name:"Hostile, with purpose", desc:"It wishes to see you distressed, annoyed, or otherwise suffering, though never dead. There is a reason behind its malice, even if you cannot comprehend it."},
+      {min:8,max:8,  name:"Territorial, reactive", desc:"It does not seek conflict, but even still it has laid claim to this place."},
+      {min:9,max:10, name:"Transactional, precise", desc:"It can be bargained with. It honours agreements, exactly as stated. It will find every loophole. Be careful what you offer."}
+    ];
+    var DRIVE = [
+      {n:1, name:"Completion", desc:"It (or something it cares about) remains unfinished. It seeks a missing component: a mechanical piece, a ritual, a sacrifice, a word."},
+      {n:2, name:"Solitude", desc:"It wishes to be left alone."},
+      {n:3, name:"Worship", desc:"It craves acknowledgment, or reverence, or fear. Its demand is observance."},
+      {n:4, name:"Understanding", desc:"It is trying to comprehend something: itself, the world, morality, pain."},
+      {n:5, name:"Return", desc:"It does not belong here. It is trying to get home."},
+      {n:6, name:"Reproduction", desc:"It wants to create more of itself. The method may involve biology, machinery, infection, or memetic propagation."},
+      {n:7, name:"Consumption", desc:"It is hungry for something specific: a memory, an object, specific emotions, specific people."},
+      {n:8, name:"Preservation", desc:"It is protecting something, or someone, or some place. Its methods are extreme, but its purpose is guardianship."},
+      {n:9, name:"Transformation", desc:"It wants to change things, to remake the world according to a vision only it can see."},
+      {n:10,name:"None apparent", desc:"It seems not to want for anything. It simply exists."}
+    ];
+    var MANIF = [
+      {n:1, name:"Reality warping", desc:"Physics bends near it. Gravity shifts. Time seems to stutter."},
+      {n:2, name:"Psychic dominion", desc:"It commands minds directly. Thoughts are not private. Will is often negotiable."},
+      {n:3, name:"Biomanipulation", desc:"Flesh obeys it and the body reshapes. Healing and mutation both are within equal reach."},
+      {n:4, name:"Technological control", desc:"Machines serve it without interface. Ancient systems wake at its presence."},
+      {n:5, name:"Entropic reversal", desc:"It feeds on death, decay, and endings. The more which dies near it, the stronger it becomes."},
+      {n:6, name:"Dimensional access", desc:"It opens doors to other places. Sometimes it pulls things through."},
+      {n:7, name:"Sensory weaponization", desc:"To perceive it is to be harmed. Sight, sound, scent \u2014 all become vectors for damage."},
+      {n:8, name:"Memetic propagation", desc:"Ideas spread from it like disease. Thoughts take root. Behaviors seem to replicate, cults forming with strange intentions."},
+      {n:9, name:"Environmental embodiment", desc:"It is the terrain. The mountain moves because the mountain is alive. The forest thinks because the forest is it."},
+      {n:10,name:"Authority over life and death", desc:"It kills with attention. It raises what it kills. The boundary is permeable to it."}
+    ];
+    var LIMIT = [
+      {n:1, name:"Bound to location", desc:"It cannot leave a specific place. It is anchored, imprisoned, or simply unwilling to move."},
+      {n:2, name:"Requires sustenance", desc:"Its power demands fuel: worship, sacrifice, specific materials, specific conditions."},
+      {n:3, name:"Cyclical dormancy", desc:"It sleeps, or weakens, according to patterns: seasons, stellar alignments, arbitrary intervals."},
+      {n:4, name:"Vulnerability to substance", desc:"Something harms it: a specific metal, or sound, or concept. The weakness may be known or secret."},
+      {n:5, name:"Cognitive blind spot", desc:"It cannot perceive certain concepts: the innocent, the faithful, those who do not believe in it."},
+      {n:6, name:"Bound by rules", desc:"It must follow laws, perhaps self-imposed, perhaps enforced externally. Contracts, thresholds, invitations. All of these it must abide."},
+      {n:7, name:"Dependent upon anchor", desc:"Its existence is tied to an object, a place, or a person. Destroy the anchor, and the god follows."},
+      {n:8, name:"Limited attention", desc:"Its mind cannot focus on too many things. Overwhelm it with stimuli, and it becomes confused and distractible."},
+      {n:9, name:"Deteriorating slowly", desc:"Gradually, it is dying. Day by day, its power fades. Its mind fractures. It may become desperate, resigned, or unaware."},
+      {n:10,name:"None known", desc:"If it has a weakness, no one has discovered it. This does not mean it lacks one. It means no one has survived to report it."}
+    ];
+
+    function rangeLabel(min,max){ return min===max ? String(min) : (min+"–"+max); }
+    function fill(id,rows){ var el=document.getElementById(id); if(el) el.innerHTML=rows; }
+
+    // reference tables
+    (function(){
+      var rows="";
+      FORM.forEach(function(f,i){
+        rows += '<tr><td class="roll">'+(i+1)+'</td><td>'+
+          '<div class="variant"><span class="vtag">1–5</span><span class="nm">'+esc(f.a.name)+'</span><small>'+esc(f.a.desc)+'</small></div>'+
+          '<div class="variant"><span class="vtag">6–10</span><span class="nm">'+esc(f.b.name)+'</span><small>'+esc(f.b.desc)+'</small></div>'+
+          '</td></tr>';
+      });
+      fill("pg-form-table", rows);
+    })();
+    function simpleTable(id,arr){
+      var rows="";
+      arr.forEach(function(x){
+        var r = (x.min!==undefined) ? rangeLabel(x.min,x.max) : String(x.n);
+        rows += '<tr><td class="roll">'+r+'</td><td><span class="nm">'+esc(x.name)+'</span><small>'+esc(x.desc)+'</small></td></tr>';
+      });
+      fill(id, rows);
+    }
+    simpleTable("pg-disp-table", DISP);
+    simpleTable("pg-drive-table", DRIVE);
+    simpleTable("pg-manif-table", MANIF);
+    simpleTable("pg-limit-table", LIMIT);
+
+    // rolling
+    function resolveRange(arr,n){ for(var i=0;i<arr.length;i++){ if(n>=arr[i].min && n<=arr[i].max) return arr[i]; } return arr[arr.length-1]; }
+    function rollForm(){ var row=d10(), vr=d10(), v=(vr<=5?"a":"b"); return {row:row, vr:vr, data:FORM[row-1][v]}; }
+    function rollDisp(){ var n=d10(); return {n:n, data:resolveRange(DISP,n)}; }
+    function rollList(arr){ var n=d10(); return {n:n, data:arr[n-1]}; }
+
+    var cur=null;
+
+    function facet(key,label,name,desc){
+      return '<div class="app">'+
+        '<button class="reroll" data-k="'+key+'" title="Re-roll this facet" aria-label="Re-roll this facet">↻</button>'+
+        '<div class="app-top"><span class="app-name">'+esc(name)+'</span><span class="count">'+label+'</span></div>'+
+        '<p class="app-desc">'+esc(desc)+'</p></div>';
+    }
+
+    function render(){
+      var res=document.getElementById("pg-result");
+      var fa=cur.formA.data, fb=cur.formB.data;
+      var stamp="form I "+cur.formA.row+"·"+cur.formA.vr+
+        " · form II "+cur.formB.row+"·"+cur.formB.vr+
+        " · disposition "+cur.disp.n+" · drive "+cur.drive.n+
+        " · manifestation "+cur.manif.n+" · limitation "+cur.limit.n;
+
+      var h='<div class="specimen">';
+      h+='<p class="spec-names">A Pseudo God, called through</p>';
+      h+='<p class="rollstamp">'+esc(stamp)+'</p>';
+      h+='<div class="apps">';
+      h+=facet("formA","Form · I", fa.name, fa.desc);
+      h+=facet("formB","Form · II", fb.name, fb.desc);
+      h+=facet("disp","Disposition", cur.disp.data.name, cur.disp.data.desc);
+      h+=facet("drive","Drive", cur.drive.data.name, cur.drive.data.desc);
+      h+=facet("manif","Manifestation", cur.manif.data.name, cur.manif.data.desc);
+      h+=facet("limit","Limitation", cur.limit.data.name, cur.limit.data.desc);
+      h+='</div></div>';
+      res.innerHTML=h;
+    }
+
+    function conjure(){
+      cur={ formA:rollForm(), formB:rollForm(), disp:rollDisp(),
+            drive:rollList(DRIVE), manif:rollList(MANIF), limit:rollList(LIMIT) };
+      render();
+    }
+
+    document.getElementById("pg-conjure").addEventListener("click", conjure);
+    document.getElementById("pg-result").addEventListener("click", function(e){
+      var btn=e.target.closest(".reroll"); if(!btn || !cur) return;
+      var k=btn.getAttribute("data-k");
+      if(k==="formA") cur.formA=rollForm();
+      else if(k==="formB") cur.formB=rollForm();
+      else if(k==="disp") cur.disp=rollDisp();
+      else if(k==="drive") cur.drive=rollList(DRIVE);
+      else if(k==="manif") cur.manif=rollList(MANIF);
+      else if(k==="limit") cur.limit=rollList(LIMIT);
+      render();
+    });
+  })();
+})();
+</script>
+</body>
+</html>
