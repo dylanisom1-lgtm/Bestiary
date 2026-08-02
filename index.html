@@ -707,6 +707,20 @@
       <p>Their appendages — feelers, limbs, mouths, eyes, and organs stranger still — act of their own accord. Some delicately survey the world; others whisper in a thousand inhuman tongues; others still drip with noxious ichor, unfurling tendrils tipped in human hands.</p>
     </div>
 
+    <section class="divination" aria-label="Specimen autoroller">
+      <div class="div-head">
+        <h3>Conjure a Specimen</h3>
+        <p>Cast the dice and a single Moluth crawls out of the tables — sized, limbed, and already wanting something.</p>
+      </div>
+      <div class="conjure-wrap">
+        <button class="conjure" id="conjure">Cast the Dice</button>
+        <span class="conjure-sub">size · appendages · disposition, resolved in one throw</span>
+      </div>
+      <div id="result" aria-live="polite">
+        <p class="empty">No specimen yet stirs. Cast the dice to wake one.</p>
+      </div>
+    </section>
+
     <p class="section-label">Size &amp; Bulk — d20</p>
     <table class="codex-table">
       <caption>Roll once to determine the specimen's scale, vitality, and number of appendages.</caption>
@@ -725,20 +739,6 @@
       <thead><tr><th>Roll</th><th>Appendage</th></tr></thead>
       <tbody id="parts-table"></tbody>
     </table>
-
-    <section class="divination" aria-label="Specimen autoroller">
-      <div class="div-head">
-        <h3>Conjure a Specimen</h3>
-        <p>Cast the dice and a single Moluth crawls out of the tables — sized, limbed, and already wanting something.</p>
-      </div>
-      <div class="conjure-wrap">
-        <button class="conjure" id="conjure">Cast the Dice</button>
-        <span class="conjure-sub">size · appendages · disposition, resolved in one throw</span>
-      </div>
-      <div id="result" aria-live="polite">
-        <p class="empty">No specimen yet stirs. Cast the dice to wake one.</p>
-      </div>
-    </section>
    </div>
 
    <div class="folio-view" data-view="pseudo-gods" hidden>
@@ -761,19 +761,19 @@
     <section class="divination" aria-label="Pseudo God autoroller">
       <div class="div-head">
         <h3>Raise a Pseudo God</h3>
-        <p>Seven throws resolve at once — two contradictory forms, then how it regards you, what it wants, how it reaches, and what constrains it.</p>
+        <p>Five facets in one cast — its form, how it regards you, what it wants, how it reaches, and what constrains it.</p>
       </div>
       <div class="conjure-wrap">
         <button class="conjure" id="pg-conjure">Cast the Dice</button>
-        <span class="conjure-sub">form ×2 · disposition · drive · manifestation · limitation</span>
+        <span class="conjure-sub">form · disposition · drive · manifestation · limitation</span>
       </div>
       <div id="pg-result" aria-live="polite">
         <p class="empty">Nothing has yet been called through. Cast the dice to raise one.</p>
       </div>
     </section>
 
-    <p class="section-label">Form — d10, rolled twice</p>
-    <table class="codex-table"><caption>A Pseudo God wears contradictory forms. Roll twice; for each, roll d10 for the entry, then again — 1–5 or 6–10 — for its cast.</caption>
+    <p class="section-label">Form — d10 ×2</p>
+    <table class="codex-table"><caption>Roll d10 for the entry, then d10 again — 1–5 or 6–10 — for its cast.</caption>
       <thead><tr><th>Roll</th><th>Form</th></tr></thead>
       <tbody id="pg-form-table"></tbody>
     </table>
@@ -1296,9 +1296,8 @@
 
     function render(){
       var res=document.getElementById("pg-result");
-      var fa=cur.formA.data, fb=cur.formB.data;
-      var stamp="form I "+cur.formA.row+"·"+cur.formA.vr+
-        " · form II "+cur.formB.row+"·"+cur.formB.vr+
+      var f=cur.form.data;
+      var stamp="form "+cur.form.row+"·"+cur.form.vr+
         " · disposition "+cur.disp.n+" · drive "+cur.drive.n+
         " · manifestation "+cur.manif.n+" · limitation "+cur.limit.n;
 
@@ -1306,8 +1305,7 @@
       h+='<p class="spec-names">A Pseudo God, called through</p>';
       h+='<p class="rollstamp">'+esc(stamp)+'</p>';
       h+='<div class="apps">';
-      h+=facet("formA","Form · I", fa.name, fa.desc);
-      h+=facet("formB","Form · II", fb.name, fb.desc);
+      h+=facet("form","Form", f.name, f.desc);
       h+=facet("disp","Disposition", cur.disp.data.name, cur.disp.data.desc);
       h+=facet("drive","Drive", cur.drive.data.name, cur.drive.data.desc);
       h+=facet("manif","Manifestation", cur.manif.data.name, cur.manif.data.desc);
@@ -1317,7 +1315,7 @@
     }
 
     function conjure(){
-      cur={ formA:rollForm(), formB:rollForm(), disp:rollDisp(),
+      cur={ form:rollForm(), disp:rollDisp(),
             drive:rollList(DRIVE), manif:rollList(MANIF), limit:rollList(LIMIT) };
       render();
     }
@@ -1326,8 +1324,7 @@
     document.getElementById("pg-result").addEventListener("click", function(e){
       var btn=e.target.closest(".reroll"); if(!btn || !cur) return;
       var k=btn.getAttribute("data-k");
-      if(k==="formA") cur.formA=rollForm();
-      else if(k==="formB") cur.formB=rollForm();
+      if(k==="form") cur.form=rollForm();
       else if(k==="disp") cur.disp=rollDisp();
       else if(k==="drive") cur.drive=rollList(DRIVE);
       else if(k==="manif") cur.manif=rollList(MANIF);
