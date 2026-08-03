@@ -857,7 +857,7 @@
   ];
 
   var EPITHETS = {
-    "Crown of Polyps":"Mercantile Moluth",
+    "Crown of Polyps":"Zooarch",
     "Returning Womb":"Womb Garden",
     "Vault of Teeth":"Gastrodont",
     "Stomoclaw":"Chelipod",
@@ -986,29 +986,31 @@
     return read;
   }
 
-  function epithetFor(apps){
-    var present = {}, crownCount = 0, hasNovelty = false;
+  var MOLUTH_CLASS = {"Dog-sized":"Lesser Moluth","Human-sized":"Common Moluth","Cart-sized":"Greater Moluth","House-sized":"Giant Moluth"};
+  var NO_READ = {"Aberration":1,"Lesser Moluth":1,"Common Moluth":1,"Greater Moluth":1,"Giant Moluth":1};
+
+  function epithetFor(apps, size){
+    var crownCount = 0, hasNovelty = false, counts = {};
     apps.forEach(function(a){
       if(a.fused){
         hasNovelty = true;
-        a.fused.forEach(function(f){
-          present[f.part.name] = 1;
-          if(f.part.tag === "crown") crownCount++;
-        });
+        a.fused.forEach(function(f){ if(f.part.tag === "crown") crownCount++; });
+      } else if(a.part.tag === "crown"){
+        crownCount++;
       } else {
-        present[a.part.name] = 1;
-        if(a.part.tag === "crown") crownCount++;
-        if(a.part.tag === "novel") hasNovelty = true;
+        counts[a.part.name] = (counts[a.part.name]||0) + 1;
       }
     });
     if(crownCount >= 3) return "Eldermind";
     if(crownCount === 2) return "Twin-Headed Ogre";
-    if(crownCount === 1) return "Mercantile Moluth";
+    if(crownCount === 1) return "Zooarch";
     if(hasNovelty) return "Aberration";
-    for(var i=0;i<EPITHET_PRIORITY.length;i++){
-      if(present[EPITHET_PRIORITY[i]]) return EPITHETS[EPITHET_PRIORITY[i]];
-    }
-    return "Nameless Congregation";
+    // named after the single most-common limb; a tie (or a dominant limb with no name) → size-based Moluth class
+    var maxN = 0;
+    Object.keys(counts).forEach(function(k){ if(counts[k] > maxN) maxN = counts[k]; });
+    var top = Object.keys(counts).filter(function(k){ return counts[k] === maxN; });
+    if(top.length === 1 && EPITHETS[top[0]]) return EPITHETS[top[0]];
+    return MOLUTH_CLASS[size.name] || "Lesser Moluth";
   }
 
   // ---- group identical appendages for tidy display ----
@@ -1042,7 +1044,7 @@
     var html = "";
     html += '<div class="specimen">';
     html += '<p class="spec-names">A single specimen, conjured</p>';
-    var epi = epithetFor(apps);
+    var epi = epithetFor(apps, s);
     var epiDesc = DESCRIPTIONS[epi];
     html += '<p class="epithet"><span class="the">the </span>'+esc(epi)+'</p>';
     html += '<p class="rollstamp">size <b>'+current.sizeRoll+'</b> &nbsp;·&nbsp; limbs '+esc(rollList)+'</p>';
@@ -1059,6 +1061,8 @@
     var readText;
     if(crownCount >= 3){ readText = "The ancient Eldermind waits as it has waited for centuries. It offers sage advice to those who seek it. Come before it now and be answered."; }
     else if(crownCount === 2){ readText = "Crowns of the Moluth usually synergize, compounding their contributions. However, on this particular encounter, they’ve seemingly developed their own distinct personalities. One body, many minds."; }
+    else if(crownCount === 1){ readText = "A sentient Moluth. The crown's intellect drowns out all base instinct. This one can be reasoned with."; }
+    else if(NO_READ[epi]){ readText = ""; }
     else if(epiDesc){ readText = epiDesc; }
     else { readText = readDisposition(apps); }
     html += '<p class="read">'+esc(readText)+
