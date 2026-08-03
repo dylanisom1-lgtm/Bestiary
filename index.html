@@ -469,6 +469,16 @@
     margin:0 0 4px;
   }
   .specimen .epithet .the{color:var(--vellum-faint);font-size:.7em}
+  .specimen .epithet-desc{
+    font-family:"EB Garamond",serif;
+    font-style:italic;
+    text-align:center;
+    color:var(--vellum-dim);
+    max-width:54ch;
+    margin:0 auto 4px;
+    font-size:1.02rem;
+    line-height:1.45;
+  }
   .rollstamp{
     text-align:center;
     font-family:"Cinzel",serif;
@@ -847,24 +857,35 @@
   ];
 
   var EPITHETS = {
-    "Crown of Polyps":"Crowned Interlocutor",
-    "Returning Womb":"Second Birth",
-    "Vault of Teeth":"Drowned Gullet",
-    "Stomoclaw":"Seizing Deep",
-    "Human Hand Cluster":"Hundred-Handed Almsman",
-    "Chitinous Spear-Tongue":"Reeling Spire",
+    "Crown of Polyps":"Mercantile Moluth",
+    "Returning Womb":"Womb Garden",
+    "Vault of Teeth":"Gastrodont",
+    "Stomoclaw":"Chelipod",
+    "Human Hand Cluster":"Hundred-Handed Trader-Thing",
+    "Chitinous Spear-Tongue":"Spear-Blossom",
     "Secretion Furnace":"Glue-Kiln",
-    "Ciliated Feeding Funnel":"Open Mouth",
-    "Nosulary Stalks":"Watcher of Stalks",
+    "Ciliated Feeding Funnel":"Ciliath",
+    "Nosulary Stalks":"Argolith",
     "Apologic Pheromones":"Weeping Penitent",
-    "Bulbous Tongue Grove":"Babbling Flail",
-    "Cartilaginous Petal Fingers":"Anemone Hand",
+    "Bulbous Tongue Grove":"Polyglot",
+    "Cartilaginous Petal Fingers":"Finger-Grove",
     "Ambulacral Fringe":"Skittering Skirt"
   };
   var EPITHET_PRIORITY = ["Crown of Polyps","Returning Womb","Vault of Teeth","Stomoclaw",
     "Human Hand Cluster","Chitinous Spear-Tongue","Secretion Furnace","Ciliated Feeding Funnel",
     "Nosulary Stalks","Apologic Pheromones","Bulbous Tongue Grove","Cartilaginous Petal Fingers",
     "Ambulacral Fringe"];
+
+  var DESCRIPTIONS = {
+    "Womb Garden":"Swallows the living and the dead alike and, a scene or two later, bio-prints them anew: perfect copies wearing the original's memories and skills.",
+    "Gastrodont":"A mouth turned inward. Whatever it draws in is reduced to pulp over slow, patient turns, and escape means clawing back through the dental dark.",
+    "Chelipod":"A great gripping, crushing claw. Slow to close the distance, but very hard to pry loose once it has hold.",
+    "Spear-Blossom":"Skewers prey at range, reeling them in with its chitinous tongue. A patient ambush predator.",
+    "Ciliath":"A quiet drifter, all gaping funnel. It filter-feeds upon the motes and spoor of the open air. The least dangerous of its ilk.",
+    "Argolith":"Fringed with frond-like stalks of unblinking eyes. A creeping paralysis is induced in anything which holds its gaze too long.",
+    "Polyglot":"A babbling thicket of tongues erupting from their shell, each mutters in a different inhuman register. A riot of noise.",
+    "Finger-Grove":"Splayed, cartilage-jointed digits which open and close like an anemone's crown, reading the world through vibration and touch."
+  };
 
   function d20(){ return Math.floor(Math.random()*20)+1; }
   function resolve(table,n){
@@ -903,10 +924,32 @@
   }
 
   // ---- 10-point PRISMA spread across six axes ----
-  function prismaSpread(){
+  function prismaSpread(points){
+    points = points || 10;
     var axes = ["P","R","I","S","M","A"], out=[0,0,0,0,0,0];
-    for(var i=0;i<10;i++){ out[Math.floor(Math.random()*6)]++; }
+    for(var i=0;i<points;i++){ out[Math.floor(Math.random()*6)]++; }
     return axes.map(function(a,i){ return {axis:a, val:out[i]}; });
+  }
+  function prismaRowHTML(spread){
+    var h='<div class="prisma-row">';
+    spread.forEach(function(p){ h+='<div class="pr-axis"><span class="ax">'+p.axis+'</span><span class="pv">'+p.val+'</span></div>'; });
+    return h+'</div>';
+  }
+  // one 10-point spread per crown — but three+ crowns pool into a single master spread
+  function prismaBlock(crownCount){
+    if(crownCount >= 3){
+      var total=crownCount*10;
+      return '<div class="prisma"><div class="pr-label">Unified spread — '+total+'-point</div>'+
+        prismaRowHTML(prismaSpread(total))+
+        '<p class="caption">'+crownCount+' crowns pooled into one mind — distribute all '+total+' points across your PRISMA axes.</p></div>';
+    }
+    if(crownCount === 2){
+      return '<div class="prisma"><div class="pr-label">First mind — 10-point spread</div>'+prismaRowHTML(prismaSpread(10))+'</div>'+
+        '<div class="prisma"><div class="pr-label">Second mind — 10-point spread</div>'+prismaRowHTML(prismaSpread(10))+
+        '<p class="caption">Two minds, two spreads — run each head as its own thinking creature.</p></div>';
+    }
+    return '<div class="prisma"><div class="pr-label">10-point PRISMA spread</div>'+prismaRowHTML(prismaSpread(10))+
+      '<p class="caption">Ten points across the six PRISMA axes — assign to your table\'s stats as you see fit.</p></div>';
   }
 
   // ---- disposition-reading engine: "the appendages become the behaviour" ----
@@ -944,11 +987,24 @@
   }
 
   function epithetFor(apps){
-    var present = {};
+    var present = {}, crownCount = 0, hasNovelty = false;
     apps.forEach(function(a){
-      if(a.fused){ a.fused.forEach(function(f){present[f.part.name]=1;}); }
-      else { present[a.part.name]=1; }
+      if(a.fused){
+        hasNovelty = true;
+        a.fused.forEach(function(f){
+          present[f.part.name] = 1;
+          if(f.part.tag === "crown") crownCount++;
+        });
+      } else {
+        present[a.part.name] = 1;
+        if(a.part.tag === "crown") crownCount++;
+        if(a.part.tag === "novel") hasNovelty = true;
+      }
     });
+    if(crownCount >= 3) return "Eldermind";
+    if(crownCount === 2) return "Twin-Headed Ogre";
+    if(crownCount === 1) return "Mercantile Moluth";
+    if(hasNovelty) return "Aberration";
     for(var i=0;i<EPITHET_PRIORITY.length;i++){
       if(present[EPITHET_PRIORITY[i]]) return EPITHETS[EPITHET_PRIORITY[i]];
     }
@@ -986,7 +1042,9 @@
     var html = "";
     html += '<div class="specimen">';
     html += '<p class="spec-names">A single specimen, conjured</p>';
-    html += '<p class="epithet"><span class="the">the </span>'+esc(epithetFor(apps))+'</p>';
+    var epi = epithetFor(apps);
+    var epiDesc = DESCRIPTIONS[epi];
+    html += '<p class="epithet"><span class="the">the </span>'+esc(epi)+'</p>';
     html += '<p class="rollstamp">size <b>'+current.sizeRoll+'</b> &nbsp;·&nbsp; limbs '+esc(rollList)+'</p>';
 
     // stat line
@@ -997,8 +1055,13 @@
     html += '<div class="stat"><span class="k">Sentience</span><span class="v">'+(crownCount?'Crowned':'Instinct')+'</span></div>';
     html += '</div>';
 
-    // reading
-    html += '<p class="read">'+esc(readDisposition(apps))+
+    // reading — crowned multi-minds speak for themselves
+    var readText;
+    if(crownCount >= 3){ readText = "The ancient Eldermind waits as it has waited for centuries. It offers sage advice to those who seek it. Come before it now and be answered."; }
+    else if(crownCount === 2){ readText = "Crowns of the Moluth usually synergize, compounding their contributions. However, on this particular encounter, they’ve seemingly developed their own distinct personalities. One body, many minds."; }
+    else if(epiDesc){ readText = epiDesc; }
+    else { readText = readDisposition(apps); }
+    html += '<p class="read">'+esc(readText)+
             '<span class="thesis">The appendages become the behaviour.</span></p>';
 
     // appendage cards
@@ -1032,12 +1095,12 @@
     html += '</div>'; // .apps
 
     // ---- emergent twists ----
-    if(crownCount >= 2){
-      html += '<div class="twist ogre"><h4>A Twin-headed Ogre</h4>'+
-        '<p>Two crowns rode in on the dice. Rather than compounding, they have split into distinct personalities — one body, several minds, rarely in accord. Run them as separate voices at the table; let them argue.</p></div>';
+    // Descriptions moved up to the read line. The Twin-Headed Ogre keeps its two mind-spreads
+    // in its own box; the Eldermind's pooled spread lives beneath the Mercantile block below.
+    if(crownCount === 2){
+      html += '<div class="twist ogre"><h4>A Twin-Headed Ogre</h4>'+prismaBlock(2)+'</div>';
     }
     if(crownCount >= 1){
-      var spread = prismaSpread();
       html += '<div class="twist"><h4>A Mercantile Moluth</h4>';
       html += '<p>Crowned, and so open to parley. Communication is difficult, but for the bold and clever a willing Moluth offers much:</p>';
       html += '<ul>';
@@ -1046,11 +1109,7 @@
       html += '<li><b>A Trove of Items Collected</b> — a long life of hoarding, from baubles to major arcana. Its asking-price is the GM\'s to name.</li>';
       html += '<li><b>An Appendage Borrowed</b> — for the right price, a limb departs the colony to travel with the party, run as an object-bound skill (5 HP).</li>';
       html += '</ul>';
-      html += '<div class="prisma"><div class="pr-label">10-point PRISMA spread</div><div class="prisma-row">';
-      spread.forEach(function(p){
-        html += '<div class="pr-axis"><span class="ax">'+p.axis+'</span><span class="pv">'+p.val+'</span></div>';
-      });
-      html += '</div><p class="caption">Ten points scattered across the six PRISMA axes — assign to your table\'s stats as you see fit.</p></div>';
+      if(crownCount !== 2){ html += prismaBlock(crownCount); }
       html += '</div>';
     }
 
