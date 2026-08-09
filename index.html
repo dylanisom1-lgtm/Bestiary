@@ -415,6 +415,41 @@
     font-size:1.06rem;
   }
   .conjure-wrap{text-align:center;padding:20px 20px 30px}
+  .constraints{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:14px 20px;
+    padding:4px 20px 2px;
+  }
+  .cst{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    font-family:"Cinzel",serif;
+    font-size:.56rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--vellum-faint);
+    text-align:left;
+  }
+  .cst select{
+    font-family:"EB Garamond",serif;
+    font-size:.95rem;
+    letter-spacing:.01em;
+    text-transform:none;
+    color:var(--vellum);
+    background:#f7f3ea;
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:6px 10px;
+    min-width:150px;
+    cursor:pointer;
+  }
+  .cst select:hover{border-color:var(--copper)}
+  .cst select:focus-visible{outline:2px solid var(--verdigris);outline-offset:2px}
+  .cst select:disabled{opacity:.4;cursor:not-allowed}
+  .cst.dim{opacity:.5}
   button.conjure{
     font-family:"Cinzel",serif;
     font-weight:500;
@@ -721,6 +756,57 @@
       <div class="div-head">
         <h3>Conjure a Specimen</h3>
         <p>Cast the dice and a single Moluth crawls out of the tables — sized, limbed, and already wanting something.</p>
+      </div>
+      <div class="constraints">
+        <label class="cst">Size
+          <select id="opt-size">
+            <option value="any">Any</option>
+            <option value="Dog-sized">Dog-sized</option>
+            <option value="Human-sized">Human-sized</option>
+            <option value="Cart-sized">Cart-sized</option>
+            <option value="House-sized">House-sized</option>
+          </select>
+        </label>
+        <label class="cst">Sentience
+          <select id="opt-sentience">
+            <option value="any">Any</option>
+            <option value="crowned">Crowned</option>
+            <option value="instinct">Non-sentient</option>
+          </select>
+        </label>
+        <label class="cst">Type
+          <select id="opt-type">
+            <option value="any">Any</option>
+            <optgroup label="Crowned">
+              <option>Zooarch</option>
+              <option>Twin-Headed Ogre</option>
+              <option>Eldermind</option>
+            </optgroup>
+            <optgroup label="Aberrant">
+              <option>Aberration</option>
+            </optgroup>
+            <optgroup label="By dominant limb">
+              <option>Argolith</option>
+              <option>Chelipod</option>
+              <option>Ciliath</option>
+              <option>Finger-Grove</option>
+              <option>Gastrodont</option>
+              <option>Glue-Kiln</option>
+              <option>Hundred-Handed Trader-Thing</option>
+              <option>Polyglot</option>
+              <option>Skittering Skirt</option>
+              <option>Spear-Blossom</option>
+              <option>Weeping Penitent</option>
+              <option>Womb Garden</option>
+            </optgroup>
+            <optgroup label="Undifferentiated">
+              <option>Lesser Moluth</option>
+              <option>Common Moluth</option>
+              <option>Greater Moluth</option>
+              <option>Giant Moluth</option>
+            </optgroup>
+          </select>
+        </label>
       </div>
       <div class="conjure-wrap">
         <button class="conjure" id="conjure">Cast the Dice</button>
@@ -1121,14 +1207,101 @@
     res.innerHTML = html;
   }
 
+  // ---- constrained generation ----
+  var SIZE_BY_NAME = {}; SIZES.forEach(function(s){ SIZE_BY_NAME[s.name] = s; });
+  var PART_BY_NAME = {}; PARTS.forEach(function(p){ PART_BY_NAME[p.name] = p; });
+  var EPITHET_LIMB = {}; Object.keys(EPITHETS).forEach(function(limb){
+    if(limb !== "Crown of Polyps") EPITHET_LIMB[EPITHETS[limb]] = limb;
+  });
+  var CROWN_COUNT = {"Zooarch":1,"Twin-Headed Ogre":2,"Eldermind":3};
+  var SIZECLASS_SIZE = {"Lesser Moluth":"Dog-sized","Common Moluth":"Human-sized","Greater Moluth":"Cart-sized","Giant Moluth":"House-sized"};
+  var FILLER_NAMES = PARTS.filter(function(p){ return p.tag!=="crown" && p.tag!=="novel"; }).map(function(p){ return p.name; });
+
+  function rollInRange(size){ return size.min + Math.floor(Math.random()*(size.max - size.min + 1)); }
+  function crownApp(){ return {roll:17, part:PART_BY_NAME["Crown of Polyps"], fused:null}; }
+  function fillerOf(name){ var p=PART_BY_NAME[name]; return {roll: p.min + Math.floor(Math.random()*(p.max-p.min+1)), part:p, fused:null}; }
+  function filler(){ return fillerOf(FILLER_NAMES[Math.floor(Math.random()*FILLER_NAMES.length)]); }
+  function noveltySub(){ var f=filler(); return {roll:f.roll, part:f.part}; }
+  function noveltyApp(){ return {roll:20, part:PART_BY_NAME["Aberrant Novelty"], fused:[noveltySub(), noveltySub()]}; }
+  function hasCrownIn(a){ return a.fused ? a.fused.some(function(f){return f.part.tag==="crown";}) : a.part.tag==="crown"; }
+  function smallestSizeFor(nCrowns){ for(var i=0;i<SIZES.length;i++){ if(SIZES[i].app>=nCrowns) return SIZES[i]; } return SIZES[SIZES.length-1]; }
+
+  function composeType(type, size){
+    var n=size.app, apps=[], i;
+    if(CROWN_COUNT[type]){
+      for(i=0;i<CROWN_COUNT[type];i++) apps.push(crownApp());
+      while(apps.length<n) apps.push(filler());
+      return apps;
+    }
+    if(type==="Aberration"){
+      apps.push(noveltyApp());
+      while(apps.length<n) apps.push(filler());          // fillers are crown-free → stays an Aberration
+      return apps;
+    }
+    if(SIZECLASS_SIZE[type]){
+      var a=FILLER_NAMES[Math.floor(Math.random()*FILLER_NAMES.length)], b;
+      do{ b=FILLER_NAMES[Math.floor(Math.random()*FILLER_NAMES.length)]; }while(b===a);
+      for(i=0;i<n;i++) apps.push(fillerOf(i < n/2 ? a : b));  // even split of two limbs → a tie → size class
+      return apps;
+    }
+    var limb=EPITHET_LIMB[type];
+    if(limb){
+      var maj=Math.floor(n/2)+1;                          // strict majority guarantees the dominant limb
+      for(i=0;i<maj;i++) apps.push(fillerOf(limb));
+      while(apps.length<n) apps.push(filler());
+      return apps;
+    }
+    for(i=0;i<n;i++) apps.push(rollAppendage());
+    return apps;
+  }
+
+  function ensureCrowned(apps){
+    if(apps.some(hasCrownIn)) return;
+    var idx=0;
+    for(var i=0;i<apps.length;i++){ if(!hasCrownIn(apps[i])){ idx=i; break; } }
+    apps[idx]=crownApp();
+  }
+  function ensureInstinct(apps){
+    for(var i=0;i<apps.length;i++){
+      var a=apps[i];
+      if(a.fused){ if(a.fused.some(function(f){return f.part.tag==="crown";})) apps[i]=noveltyApp(); }
+      else if(a.part.tag==="crown"){ apps[i]=filler(); }
+    }
+  }
+  function valOr(id,dflt){ var el=document.getElementById(id); return el ? el.value : dflt; }
+
   function conjure(){
-    var sizeRoll = d20();
-    var size = resolve(SIZES, sizeRoll);
-    var apps = [];
-    for(var i=0;i<size.app;i++){ apps.push(rollAppendage()); }
-    current = {sizeRoll:sizeRoll, size:size, apps:apps};
+    var sizeSel=valOr("opt-size","any"), sentSel=valOr("opt-sentience","any"), typeSel=valOr("opt-type","any");
+    var sizeRoll, size;
+    if(sizeSel==="any"){ sizeRoll=d20(); size=resolve(SIZES, sizeRoll); }
+    else { size=SIZE_BY_NAME[sizeSel]; sizeRoll=rollInRange(size); }
+    var apps, i;
+    if(typeSel!=="any"){
+      if(SIZECLASS_SIZE[typeSel]){ size=SIZE_BY_NAME[SIZECLASS_SIZE[typeSel]]; sizeRoll=rollInRange(size); }
+      if(CROWN_COUNT[typeSel] && size.app < CROWN_COUNT[typeSel]){ size=smallestSizeFor(CROWN_COUNT[typeSel]); sizeRoll=rollInRange(size); }
+      apps=composeType(typeSel, size);
+    } else {
+      apps=[];
+      for(i=0;i<size.app;i++){ apps.push(rollAppendage()); }
+      if(sentSel==="crowned") ensureCrowned(apps);
+      else if(sentSel==="instinct") ensureInstinct(apps);
+    }
+    current={sizeRoll:sizeRoll, size:size, apps:apps};
     render();
   }
+
+  // keep controls coherent: a chosen Type dictates sentience (and a size-class dictates size)
+  (function(){
+    var t=document.getElementById("opt-type"), sz=document.getElementById("opt-size"), se=document.getElementById("opt-sentience");
+    if(!t) return;
+    function sync(){
+      var isType=t.value!=="any";
+      se.disabled=isType; se.parentNode.classList.toggle("dim", isType);
+      var sizeFixed=!!SIZECLASS_SIZE[t.value];
+      sz.disabled=sizeFixed; sz.parentNode.classList.toggle("dim", sizeFixed);
+    }
+    t.addEventListener("change", sync); sync();
+  })();
 
   // ---- collapsible index ----
   (function(){
@@ -1148,7 +1321,6 @@
   // ---- creature roster + hash routing ----
   (function(){
     var ENTRIES = [
-      {slug:"archmagi",                name:"Archmagi"},
       {slug:"atrox-the-pursuant",      name:"Atrox the Pursuant"},
       {slug:"attractor-ghosts",        name:"Attractor Ghosts"},
       {slug:"carnomycelia",            name:"Carnomycelia"},
@@ -1159,9 +1331,11 @@
       {slug:"dust-shepherds",          name:"Dust Shepherds"},
       {slug:"great-formicaries",       name:"Great Formicaries, The"},
       {slug:"great-white-basalt-apes", name:"Great White Basalt Apes"},
+      {slug:"hierophants",             name:"Hierophants"},
       {slug:"hyladons",                name:"Hyladons"},
       {slug:"landsknechts",            name:"Landsknechts"},
       {slug:"moluth",                  name:"Moluth", by:"Zooarchs · Limb-Gardens", ready:true},
+      {slug:"nooliths",                name:"Noöliths"},
       {slug:"nootic-mass",             name:"Noōtic Mass"},
       {slug:"ouroliths",               name:"Ouroliths"},
       {slug:"panhumanity",             name:"Panhumanity"},
@@ -1175,8 +1349,7 @@
       {slug:"tree-hydras",             name:"Tree Hydras"},
       {slug:"tricephalodons",          name:"Tricephalodons"},
       {slug:"vaultwood",               name:"Vaultwood"},
-      {slug:"wyvern-moths",            name:"Wyvern Moths"},
-      {slug:"ziggurats",               name:"Ziggurats"}
+      {slug:"wyvern-moths",            name:"Wyvern Moths"}
     ];
     var DEFAULT = "moluth";
     var list = document.getElementById("entryList");
