@@ -942,6 +942,8 @@
     {min:20,max:20, name:"Aberrant Novelty",          tag:"novel",  desc:"Something wholly new.", mech:"Roll twice and fuse the results, or invent an organ befitting a protean, impossible thing."}
   ];
 
+  var ELDERMIND_NAMES = ["Oöleth the Unhurried","Xthenu, the Ten-Times-Wise","Nauthramar the Immured","Yssagor the Manifold","Coraleth, Well of Answers","Ossivane the All-Remembering"];
+
   var EPITHETS = {
     "Crown of Polyps":"Zooarch",
     "Returning Womb":"Womb Garden",
@@ -1131,8 +1133,10 @@
     html += '<div class="specimen">';
     html += '<p class="spec-names">A single specimen, conjured</p>';
     var epi = epithetFor(apps, s);
+    // a three-plus-crown Eldermind is an individual, not a type — give it a proper name, no "the"
+    if(crownCount >= 3 && current.eldermindName){ epi = current.eldermindName; }
     var epiDesc = DESCRIPTIONS[epi];
-    html += '<p class="epithet"><span class="the">the </span>'+esc(epi)+'</p>';
+    html += '<p class="epithet">'+(crownCount >= 3 ? '' : '<span class="the">the </span>')+esc(epi)+'</p>';
     html += '<p class="rollstamp">size <b>'+current.sizeRoll+'</b> &nbsp;·&nbsp; limbs '+esc(rollList)+'</p>';
 
     // stat line
@@ -1286,7 +1290,7 @@
       if(sentSel==="crowned") ensureCrowned(apps);
       else if(sentSel==="instinct") ensureInstinct(apps);
     }
-    current={sizeRoll:sizeRoll, size:size, apps:apps};
+    current={sizeRoll:sizeRoll, size:size, apps:apps, eldermindName: ELDERMIND_NAMES[Math.floor(Math.random()*ELDERMIND_NAMES.length)]};
     render();
   }
 
