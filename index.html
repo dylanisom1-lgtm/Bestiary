@@ -859,9 +859,26 @@
         <h3>Raise a Pseudo God</h3>
         <p>Five facets in one cast — its form, how it regards you, what it wants, how it reaches, and what constrains it.</p>
       </div>
+      <div class="constraints">
+        <label class="cst">Form
+          <select id="pg-opt-form"><option value="any">Random</option></select>
+        </label>
+        <label class="cst">Disposition
+          <select id="pg-opt-disp"><option value="any">Random</option></select>
+        </label>
+        <label class="cst">Drive
+          <select id="pg-opt-drive"><option value="any">Random</option></select>
+        </label>
+        <label class="cst">Manifestation
+          <select id="pg-opt-manif"><option value="any">Random</option></select>
+        </label>
+        <label class="cst">Limitation
+          <select id="pg-opt-limit"><option value="any">Random</option></select>
+        </label>
+      </div>
       <div class="conjure-wrap">
         <button class="conjure" id="pg-conjure">Cast the Dice</button>
-        <span class="conjure-sub">form · disposition · drive · manifestation · limitation</span>
+        <span class="conjure-sub">pin any trait — the rest are rolled</span>
       </div>
       <div id="pg-result" aria-live="polite">
         <p class="empty">Nothing has yet been called through. Cast the dice to raise one.</p>
@@ -1519,11 +1536,45 @@
     simpleTable("pg-manif-table", MANIF);
     simpleTable("pg-limit-table", LIMIT);
 
+    // populate the pin-a-trait selects from the tables (kept in sync with the data)
+    function fillSelect(id, names){
+      var el=document.getElementById(id); if(!el) return;
+      names.forEach(function(nm){ var o=document.createElement("option"); o.value=nm; o.textContent=nm; el.appendChild(o); });
+    }
+    var formNames=[]; FORM.forEach(function(f){ formNames.push(f.a.name); formNames.push(f.b.name); });
+    fillSelect("pg-opt-form", formNames);
+    fillSelect("pg-opt-disp", DISP.map(function(x){return x.name;}));
+    fillSelect("pg-opt-drive", DRIVE.map(function(x){return x.name;}));
+    fillSelect("pg-opt-manif", MANIF.map(function(x){return x.name;}));
+    fillSelect("pg-opt-limit", LIMIT.map(function(x){return x.name;}));
+
     // rolling
     function resolveRange(arr,n){ for(var i=0;i<arr.length;i++){ if(n>=arr[i].min && n<=arr[i].max) return arr[i]; } return arr[arr.length-1]; }
     function rollForm(){ var row=d10(), vr=d10(), v=(vr<=5?"a":"b"); return {row:row, vr:vr, data:FORM[row-1][v]}; }
     function rollDisp(){ var n=d10(); return {n:n, data:resolveRange(DISP,n)}; }
     function rollList(arr){ var n=d10(); return {n:n, data:arr[n-1]}; }
+
+    // a pinned trait overrides the roll for that facet (with a plausible die value for the stamp)
+    function valOf(id){ var el=document.getElementById(id); return el ? el.value : "any"; }
+    function forcedForm(){
+      var v=valOf("pg-opt-form"); if(v==="any") return null;
+      for(var r=0;r<FORM.length;r++){
+        if(FORM[r].a.name===v) return {row:r+1, vr:1+Math.floor(Math.random()*5), data:FORM[r].a};
+        if(FORM[r].b.name===v) return {row:r+1, vr:6+Math.floor(Math.random()*5), data:FORM[r].b};
+      }
+      return null;
+    }
+    function forced(arr, id){
+      var v=valOf(id); if(v==="any") return null;
+      for(var i=0;i<arr.length;i++){
+        if(arr[i].name===v){
+          var e=arr[i];
+          var n=(e.min!==undefined) ? (e.min+Math.floor(Math.random()*(e.max-e.min+1))) : e.n;
+          return {n:n, data:e};
+        }
+      }
+      return null;
+    }
 
     var cur=null;
 
@@ -1555,8 +1606,11 @@
     }
 
     function conjure(){
-      cur={ form:rollForm(), disp:rollDisp(),
-            drive:rollList(DRIVE), manif:rollList(MANIF), limit:rollList(LIMIT) };
+      cur={ form:  forcedForm()               || rollForm(),
+            disp:  forced(DISP, "pg-opt-disp")   || rollDisp(),
+            drive: forced(DRIVE, "pg-opt-drive") || rollList(DRIVE),
+            manif: forced(MANIF, "pg-opt-manif") || rollList(MANIF),
+            limit: forced(LIMIT, "pg-opt-limit") || rollList(LIMIT) };
       render();
     }
 
